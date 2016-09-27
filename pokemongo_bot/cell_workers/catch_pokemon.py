@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+from __future__ import absolute_import
 
 import json
 import os
@@ -10,7 +11,7 @@ from pokemongo_bot.cell_workers.pokemon_catch_worker import PokemonCatchWorker
 from pokemongo_bot.worker_result import WorkerResult
 from pokemongo_bot.item_list import Item
 from pokemongo_bot import inventory
-from utils import fort_details, distance,  format_time
+from .utils import fort_details, distance,  format_time
 from pokemongo_bot.base_dir import _base_dir
 from pokemongo_bot.constants import Constants
 from pokemongo_bot.inventory import Pokemons
@@ -19,7 +20,6 @@ class CatchPokemon(BaseTask):
     SUPPORTED_TASK_API_VERSION = 1
 
     def initialize(self):
-        self.encounter_map = {}
         self.pokemon = []
 
     def work(self):
@@ -150,12 +150,9 @@ class CatchPokemon(BaseTask):
                 self.add_pokemon(pokemon)
 
     def add_pokemon(self, pokemon):
-        if pokemon['encounter_id'] not in self.encounter_map:
-            self.encounter_map[pokemon['encounter_id']] = True
+        if pokemon['encounter_id'] not in \
+                map(lambda pokemon: pokemon['encounter_id'], self.pokemon):
             self.pokemon.append(pokemon)
-
-        if len(self.encounter_map) > 6:
-            self.encounter_map = {}
 
     def catch_pokemon(self, pokemon):
         worker = PokemonCatchWorker(pokemon, self.bot, self.config)
